@@ -26,15 +26,22 @@ class MainActivity : AppCompatActivity() {
         retrofit.create(CatApiService::class.java)
     }
 
-    private val apiResponseView: TextView by lazy {
-        findViewById(R.id.api_response)
+    private val apiResponseUrlView: TextView by lazy {
+        findViewById(R.id.api_response_url)
     }
+
+    private val apiResponseBreedView: TextView by lazy {
+        findViewById(R.id.api_response_breed)
+    }
+
     private val imageResultView: ImageView by lazy {
         findViewById(R.id.image_result)
     }
+
     private val imageLoader: ImageLoader by lazy {
         GlideLoader(this)
     }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -53,13 +60,18 @@ class MainActivity : AppCompatActivity() {
                 response: Response<List<ImageData>>
             ) {
                 if (response.isSuccessful) {
-                    val firstImage = response.body()?.firstOrNull()?.imageUrl.orEmpty()
+                    val firstCat = response.body()?.firstOrNull()
+                    val firstImage = firstCat?.imageUrl.orEmpty()
+                    val breedName = firstCat?.breeds?.firstOrNull()?.name ?: "Unknown"
+
                     if (firstImage.isNotBlank()) {
                         imageLoader.loadImage(firstImage, imageResultView)
                     } else {
                         Log.d(MAIN_ACTIVITY, "Missing image URL")
                     }
-                    apiResponseView.text = getString(R.string.image_placeholder, firstImage)
+
+                    apiResponseUrlView.text = getString(R.string.image_placeholder_url, firstImage)
+                    apiResponseBreedView.text = getString(R.string.image_placeholder_breed, breedName)
                 } else {
                     Log.e(
                         MAIN_ACTIVITY,
